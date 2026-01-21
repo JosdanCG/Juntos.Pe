@@ -7,7 +7,9 @@ router.get('/', (req, res) => {
 });
 router.post('/auth/register', (req, res) => {
     res.send('desde register');
-    console.log('desde register');
+  console.log('desde register');
+  console.log(req.body);
+  
     
 });
 

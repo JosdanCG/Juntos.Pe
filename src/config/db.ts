@@ -1,7 +1,5 @@
 import mongoose from "mongoose";
-
-console.log(process.env.MONGO_URI);
-
+import User, {IUser} from "../models/User";
 
 export const connectDB = async () => { 
     try {
