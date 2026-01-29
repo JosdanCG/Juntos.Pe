@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import slug from 'slug'
 import User from "../models/User";
-import { hashPass } from "../utils/auth";
+import { checkPass, hashPass } from "../utils/auth";
 import { validationResult } from "express-validator";
 
 export const createAcount = async (req: Request, res: Response) => {
@@ -11,13 +11,13 @@ export const createAcount = async (req: Request, res: Response) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, password} = req.body;
+    const { email, password } = req.body;
+    
     const userExists = await User.findOne({ email });
     if (userExists) {
         const error = new Error('El usuario con este email ya está registrado');
         return res.status(400).json({ msg: error.message });
     }
-    return
 
     const handle = slug(req.body.handle, '')
     const handleExists = await User.findOne({ handle })
@@ -32,4 +32,26 @@ export const createAcount = async (req: Request, res: Response) => {
 
     await user.save();
     res.status(201).send('Registro creado correctamente');
+}
+
+export const login = async (req: Request, res: Response) => {
+    let errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+        const error = new Error('El usuario no existe');
+        return res.status(404).json({ msg: error.message });
+    }
+
+    const isPasswordCorrect = await checkPass(password, user.password)
+    if (!isPasswordCorrect) {
+        const error = new Error('El password es incorrecto');
+        return res.status(401).json({ msg: error.message });
+    }
+    
+    res.send('autenticando....')
 }
